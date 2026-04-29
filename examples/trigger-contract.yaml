@@ -1,0 +1,35 @@
+trigger:
+  id: heartbeat.project-owner.fast-lane
+  target_agent: project-owner
+  source: schedule
+  cadence: "*/15 * * * *"
+  workflow_ref: null
+  node_ref: null
+  target_thread: null
+  source_threads: []
+  payload:
+    truth_refs:
+      - docs/project-status.md
+      - docs/requirements/
+    artifact_refs:
+      - artifacts/latest-validation/
+    last_run_state: state/heartbeat-project-owner.json
+    resume_token: null
+  batch_mode: work_batch
+  isolation:
+    worktree: optional
+    sandbox: project_write_only
+  permissions:
+    observe: true
+    write_draft: true
+    write_truth: false
+    pause_self: true
+    modify_others: false
+    modify_subordinate_schedule: true
+    delete_self: false
+  next_policy:
+    if_no_change: suppress_or_backoff
+    if_progress: continue
+    if_blocked: route_to_owner_agent
+    if_repeated_noise: pause
+    if_stage_changed: rewrite_prompt_or_schedule

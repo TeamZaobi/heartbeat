@@ -1,0 +1,63 @@
+workflow_backed_trigger:
+  name: feature-loop-with-owner-gate
+  trigger:
+    source: human_or_schedule
+    purpose: "start or resume a bounded workflow run"
+  nodes:
+    - id: plan
+      type: ai
+      role: project-owner
+      output:
+        - plan_control
+        - agent_directive
+    - id: implement
+      type: ai_loop
+      role: frontline-developer
+      depends_on:
+        - plan
+      max_iterations: 8
+      fresh_context: true
+      state_source:
+        - artifacts/plan_control.json
+        - artifacts/progress.json
+      done_when:
+        ai_signal: ALL_TASKS_COMPLETE
+        deterministic_check: "project validation passes"
+    - id: validate
+      type: deterministic
+      depends_on:
+        - implement
+      produces:
+        - validation_report
+    - id: parallel_review
+      type: parallel_ai_review
+      depends_on:
+        - validate
+      reviewers:
+        - engineering
+        - security
+        - release
+      produces:
+        - findings
+    - id: synthesize
+      type: ai
+      role: project-owner
+      depends_on:
+        - parallel_review
+      produces:
+        - decision_basis_review
+        - owner_verdict_dossier
+    - id: owner_gate
+      type: approval
+      depends_on:
+        - synthesize
+      decisions:
+        - owner_signed
+        - rejected_for_evidence
+        - deferred
+        - escalated
+  stop_rules:
+    - precondition_failed
+    - max_iterations_exceeded
+    - evidence_insufficient
+    - write_authority_boundary

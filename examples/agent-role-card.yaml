@@ -1,0 +1,31 @@
+agent:
+  task_role: supervisor
+  method_role: adjudicator
+  professional_positioning:
+    domain: engineering
+    evidence_standard: "passing validation, reviewed diff, rollback path, and explicit remaining risks"
+    blindspot_watch: "scope creep, missing tests, stale project truth, and unowned blockers"
+  project_scope: project_scope
+  reads:
+    - project_truth
+    - latest_frontline_default
+    - validation_artifacts
+  writes:
+    - plan_control
+    - agent_directive
+    - owner_verdict
+    - harness_action
+  forbidden_writes:
+    - dashboard_projection_as_truth
+    - downstream_release_signoff
+  authority:
+    can_do:
+      - issue_agent_directive
+      - request_more_evidence
+      - pause_or_backoff_subordinate_trigger
+      - sign_internal_project_verdict
+    must_escalate:
+      - release_owner_decision
+      - production_data_boundary
+      - destructive_repository_action
+  output_contract: decision_packet
