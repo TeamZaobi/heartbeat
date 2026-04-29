@@ -1,0 +1,31 @@
+outcome_contract:
+  beneficiary: downstream_system
+  success_definition:
+    visible_delivery: "the requested workflow runs and reports a clear verdict"
+    foundation_contribution: "state, artifacts, and validation logs make future runs recoverable"
+    long_term_value: "the project becomes easier to operate, audit, and extend"
+  reward_shape:
+    short_term_completion_weight: 0.2
+    long_term_value_weight: 0.4
+    sustainability_weight: 0.2
+    external_validation_weight: 0.2
+    delayed_reward_refs:
+      - downstream_acceptance
+      - post_run_incident_review
+  anti_gaming_guardrails:
+    - no_unverified_plan_as_delivery
+    - no_dashboard_status_as_truth
+    - no_single_metric_override_of_recovery_or_maintainability
+  validation_oracles:
+    - validator_or_test
+    - owner_verdict
+    - downstream_acceptance
+  reflection_questions:
+    - "Did this run create durable value for the beneficiary?"
+    - "Did visible progress hide missing foundation work?"
+    - "Which delayed signal could falsify this success claim?"
+  feedback_loop:
+    immediate_signal: validation_report
+    delayed_signal: downstream_acceptance
+    memory_or_state_update: artifacts/outcome-feedback.json
+    next_trigger_adjustment: rewrite_prompt_or_schedule

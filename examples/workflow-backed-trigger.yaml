@@ -1,5 +1,6 @@
 workflow_backed_trigger:
   name: feature-loop-with-owner-gate
+  outcome_contract_ref: artifacts/outcome-contract.yaml
   trigger:
     source: human_or_schedule
     purpose: "start or resume a bounded workflow run"

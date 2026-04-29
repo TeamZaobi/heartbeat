@@ -73,13 +73,13 @@ Rules:
 Think in this order:
 
 ```text
-trigger -> target Agent -> context payload -> authority -> evidence -> output -> next trigger policy
+trigger -> target Agent -> outcome contract -> context payload -> authority -> evidence -> output -> next trigger policy
 ```
 
 For repeatable Agent work, the practical object is often not a prompt but a harness:
 
 ```text
-trigger -> workflow run -> node harness -> artifact chain -> authority gate -> resume / rewrite / stop
+trigger -> workflow run -> node harness -> outcome gate -> artifact chain -> authority gate -> resume / rewrite / stop
 ```
 
 Agent management is not HR for models. Foundation-model ability is often similar across Agents; the meaningful differences come from harness design: context, tools, skills, hooks, model choice, sandbox, artifact contract, trigger source, evidence gate, adapter, and recovery policy.
@@ -92,6 +92,60 @@ control plane: explicitly layered
 ```
 
 Do not create hierarchy because one Agent is "smarter". Create hierarchy because one harness owns planning, one owns execution, one owns projection, one owns professional challenge, and one owns acceptance / recovery.
+
+## Outcome-Oriented Harness
+
+Every non-trivial heartbeat needs a definition of the right outcome before it needs a cadence. Do not optimize the Agent for quick visible activity, short transcripts, or internal KPI completion when the real job is durable value for a beneficiary.
+
+Use three principles:
+
+1. Redefine success: prefer sustained value, maintainability, evidence, and downstream usefulness over short-term surface completion.
+2. Balance visible and foundation work: reward both immediate deliverables and invisible groundwork such as test scaffolds, state cleanup, durable docs, recovery paths, and context handoff.
+3. Anchor validation in beneficiaries: use real users, downstream systems, external checks, validators, or production feedback rather than model self-assessment alone.
+
+Define an `outcome_contract` for any trigger that can change project state or guide other Agents:
+
+```yaml
+outcome_contract:
+  beneficiary: user | downstream_system | project_owner | operator | future_agent
+  success_definition:
+    visible_delivery:
+    foundation_contribution:
+    long_term_value:
+  reward_shape:
+    short_term_completion_weight:
+    long_term_value_weight:
+    sustainability_weight:
+    external_validation_weight:
+    delayed_reward_refs: []
+  anti_gaming_guardrails:
+    - no_metric_theater
+    - no_unverified_plan_as_delivery
+    - no_shortcut_that_damages_recovery_or_maintainability
+  validation_oracles:
+    - user_feedback
+    - downstream_acceptance
+    - validator_or_test
+    - third_party_metric
+  reflection_questions:
+    - Did this run create durable value for the beneficiary?
+    - Did it trade long-term reliability for short-term visible progress?
+    - What invisible foundation work should be protected or continued?
+  feedback_loop:
+    immediate_signal:
+    delayed_signal:
+    memory_or_state_update:
+    next_trigger_adjustment:
+```
+
+Treat reward shaping as harness scoring unless you are actually training a model. For most Agent systems, this means rubrics, validators, owner verdicts, dashboards, state transitions, and trigger policies.
+
+Outcome guardrails:
+
+- Block plans that look complete but have no execution path, evidence path, rollback path, or beneficiary validation.
+- Penalize specification gaming: inflated status, shallow dashboard progress, fabricated completion, hidden debt, or passing one metric while harming the system.
+- Allow protected iteration for foundation work when the long-term benefit is explicit and the trigger has a recheck condition.
+- Tighten validation during execution and release phases; allow more exploration only when the trigger is explicitly in discovery mode.
 
 Trigger sources:
 
@@ -154,6 +208,7 @@ trigger:
     artifact_refs: []
     last_run_state:
     resume_token:
+  outcome_contract_ref:
   batch_mode: single_step | work_batch | deep_push
   isolation:
     worktree: optional | required | forbidden
@@ -244,10 +299,11 @@ Stop rule: if a supervisor only comments on subordinate work but does not mainta
 4. Define context payload and memory boundary. Background trigger content must not silently become long-term memory or project truth.
 5. Define authority and forbidden actions, especially write rights, pause/resume rights, and delete rights.
 6. Define output contract. No-op runs should be suppressible.
-7. For multi-Agent systems, define the shared control contract and keep prompts thin.
-8. If the trigger has phases, retries, or reusable gates, lower it into a workflow-backed trigger contract.
-9. Define evidence standard and escalation path.
-10. Define verification: persisted config, target thread or workflow run, latest run, artifact chain, state transition, and rollback/resume path.
+7. Define the outcome contract: right outcome, visible delivery, foundation contribution, beneficiary oracle, anti-gaming guardrails, and feedback loop.
+8. For multi-Agent systems, define the shared control contract and keep prompts thin.
+9. If the trigger has phases, retries, or reusable gates, lower it into a workflow-backed trigger contract.
+10. Define evidence standard and escalation path.
+11. Define verification: persisted config, target thread or workflow run, latest run, artifact chain, state transition, and rollback/resume path.
 
 ## Output Shapes
 
@@ -255,10 +311,11 @@ For design-only requests, return:
 
 1. `agent_role_card`
 2. `trigger_contract`
-3. `authority_and_stop_rules`
-4. `shared_control_contract` when multiple Agents collaborate
-5. `workflow_backed_trigger_contract` when a DAG / loop / approval / artifact chain is needed
-6. `activation_or_verification_plan`
+3. `outcome_contract`
+4. `authority_and_stop_rules`
+5. `shared_control_contract` when multiple Agents collaborate
+6. `workflow_backed_trigger_contract` when a DAG / loop / approval / artifact chain is needed
+7. `activation_or_verification_plan`
 
 For review requests, return:
 
@@ -296,6 +353,13 @@ Workflow-backed implementation heartbeat:
 - Use deterministic validation and cancel nodes to stop wasted downstream work when a precondition fails.
 - Treat workflow UI / IM / GitHub comments as projections unless `files-driven` accepts their artifacts into project truth.
 
+Outcome-oriented heartbeat:
+
+- Require each run to say what visible delivery and foundation contribution it is protecting.
+- Use beneficiary validation or downstream acceptance as the strongest success signal.
+- Feed delayed signals back into memory, state, scoring, or trigger policy rather than letting the loop repeat a stale definition of success.
+- Escalate or rewrite the trigger when short-term activity is rising but beneficiary value, maintainability, or external validation is not.
+
 ## Anti-Patterns
 
 - Writing a cron schedule before defining the Agent role.
@@ -311,3 +375,5 @@ Workflow-backed implementation heartbeat:
 - Treating professional review as generic "quality check" without naming the domain and evidence standard.
 - Treating an external workflow README or dashboard as project authority before `files-driven` accepts the contract and artifacts.
 - Using an unbounded loop or AI-only completion signal where a deterministic validator, test, schema, or cancel gate is available.
+- Optimizing for visible status, short transcripts, or single KPI success while damaging maintainability, recovery, or downstream usefulness.
+- Treating model self-reflection as enough validation when beneficiary feedback, tests, external acceptance, or delayed outcome data are available.

@@ -15,6 +15,7 @@ A heartbeat is a trigger. A timer is only one trigger source. Good heartbeat des
 - Agent role cards before cron expressions
 - Trigger contracts with authority, evidence, and next-run policy
 - Workflow-backed trigger design for DAGs, loops, approvals, artifacts, isolation, adapters, and recovery
+- Outcome-oriented harness design: success criteria, visible and foundation work, guardrails, feedback loops, and beneficiary validation
 - Multi-Agent governance patterns for frontline Agents, project-owner Agents, dashboard/projection Agents, validators, and reviewers
 - Stop rules for pause, resume, backoff, prompt rewrite, escalation, and deletion authority
 - Harness topology guidance: model capability can be mostly flat, while control planes should be explicitly layered
@@ -120,7 +121,13 @@ trigger -> workflow run -> node harness -> artifact chain -> authority gate -> r
 
 - [Agent role card](examples/agent-role-card.yaml)
 - [Trigger contract](examples/trigger-contract.yaml)
+- [Outcome contract](examples/outcome-contract.yaml)
 - [Workflow-backed trigger](examples/workflow-backed-trigger.yaml)
+
+## Method References
+
+- [Outcome-oriented harness](references/outcome-oriented-harness.md)
+- [Multi-tool adaptation](references/multi-tool-adaptation.md)
 
 ## License
 

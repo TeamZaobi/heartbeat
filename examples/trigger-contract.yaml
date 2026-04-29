@@ -15,6 +15,7 @@ trigger:
       - artifacts/latest-validation/
     last_run_state: state/heartbeat-project-owner.json
     resume_token: null
+  outcome_contract_ref: artifacts/outcome-contract.yaml
   batch_mode: work_batch
   isolation:
     worktree: optional
