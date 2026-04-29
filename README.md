@@ -16,6 +16,7 @@ A heartbeat is a trigger. A timer is only one trigger source. Good heartbeat des
 - Trigger contracts with authority, evidence, and next-run policy
 - Workflow-backed trigger design for DAGs, loops, approvals, artifacts, isolation, adapters, and recovery
 - Outcome-oriented harness design: success criteria, visible and foundation work, guardrails, feedback loops, and beneficiary validation
+- Continuous-thread light-loop design: inherit active thread context, avoid cold-start rereads, keep prompts thin, and trigger heavy audit only on real change
 - Multi-Agent governance patterns for frontline Agents, project-owner Agents, dashboard/projection Agents, validators, and reviewers
 - Stop rules for pause, resume, backoff, prompt rewrite, escalation, and deletion authority
 - Harness topology guidance: model capability can be mostly flat, while control planes should be explicitly layered
@@ -33,6 +34,7 @@ Use this skill when a user asks to design, create, review, or modify:
 - trigger rules
 - Agent auto-run loops
 - supervisor / project-owner / dashboard Agent cycles
+- continuous-thread heartbeats that should continue the last work batch instead of replaying history
 - workflow-backed Agent orchestration
 
 Chinese trigger terms include: `心跳`, `定时任务`, `自动化`, `定期推进`, `触发器`, `trigger`, `唤醒`, `监工`, `循环`, `暂停`, `恢复`, `改频`, `重建`.
@@ -108,7 +110,7 @@ If these tools are not installed, apply the same responsibilities manually in yo
 ## Core Model
 
 ```text
-trigger -> target Agent -> context payload -> authority -> evidence -> output -> next trigger policy
+trigger -> target Agent -> context mode -> authority -> evidence -> output -> next trigger policy
 ```
 
 For repeatable Agent work, lower it into a harness:
@@ -127,6 +129,7 @@ trigger -> workflow run -> node harness -> artifact chain -> authority gate -> r
 ## Method References
 
 - [Outcome-oriented harness](references/outcome-oriented-harness.md)
+- [Continuous-thread light loops](references/continuous-thread-light-loops.md)
 - [Multi-tool adaptation](references/multi-tool-adaptation.md)
 
 ## License

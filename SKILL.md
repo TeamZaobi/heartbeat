@@ -6,8 +6,10 @@ description: >
   reminders, trigger rules, or agent auto-run loops. Treat heartbeat as Agent
   trigger design first: define the agent role, professional positioning,
   authority, evidence standard, context, stop/resume policy, and only then
-  choose schedule/event/state-change mechanics. Trigger on Chinese terms such
-  as 心跳、定时任务、自动化、定期推进、触发器、trigger、唤醒、监工、循环、暂停、恢复、改频、重建.
+  choose schedule/event/state-change mechanics. Also use for continuous-thread
+  light loops, supervisor delegation, prompt slimming, trigger rewrite, and
+  anti-bureaucratic heartbeat control. Trigger on Chinese terms such as
+  心跳、定时任务、自动化、定期推进、触发器、trigger、唤醒、监工、循环、暂停、恢复、改频、重建.
 ---
 
 # Heartbeat
@@ -35,6 +37,8 @@ shared files-driven control contract + thin role prompts
 ```
 
 The shared contract states who commands whom, which context each Agent must inherit, what output package each Agent emits, and when a trigger may pause, resume, change frequency, or escalate. Each heartbeat prompt should mostly point to that contract and state the Agent's local role.
+
+If a heartbeat targets the same continuing conversation each time, treat that thread as live working context. Do not force the Agent to reread its own latest final answer, replay the rollout, or reload the full project truth on every tick just to prove continuity. Use external files and thread reads as exception handling: new user instruction, new owner verdict, gate change, context break, boundary risk, repeated no-op, or admission / release decision.
 
 ## Multi-Tool Adaptation
 
@@ -73,7 +77,7 @@ Rules:
 Think in this order:
 
 ```text
-trigger -> target Agent -> outcome contract -> context payload -> authority -> evidence -> output -> next trigger policy
+trigger -> target Agent -> outcome contract -> context mode -> authority -> evidence -> output -> next trigger policy
 ```
 
 For repeatable Agent work, the practical object is often not a prompt but a harness:
@@ -92,6 +96,43 @@ control plane: explicitly layered
 ```
 
 Do not create hierarchy because one Agent is "smarter". Create hierarchy because one harness owns planning, one owns execution, one owns projection, one owns professional challenge, and one owns acceptance / recovery.
+
+## Continuous-Thread Light Loops
+
+Not every heartbeat is a fresh-context job. Many host automations wake the same target thread repeatedly. In that mode, continuity is already provided by the conversation, so the harness should optimize for low-noise progress rather than ritual rereading.
+
+Pick a context mode before writing the prompt:
+
+- `continuous_thread`: same target thread, previous turns remain active context.
+- `fresh_context`: each run starts from a clean context and must load state from files, artifacts, or upstream outputs.
+- `external_workflow_state`: a workflow engine or durable state store is the main continuity mechanism.
+
+Rules for `continuous_thread` heartbeats:
+
+- Default to inheriting the previous turn. If no new user instruction, owner verdict, gate change, or external artifact arrived, continue the previous `work_batch`, agree with the prior proposal, or return `DONT_NOTIFY`.
+- Do not read the Agent's own latest final answer or replay its rollout on every tick. That is cold-start behavior in a warm thread.
+- Read other threads only when the current action depends on their new final output, verdict, evidence, or blocker.
+- Refresh project truth only when the run is about to change authority level, enter implementation / runtime / release admission, adjudicate new evidence, or recover from drift.
+- Heavy audit should be event-driven: context break, gate change, boundary violation, repeated no-op, repeated shallow packets, failed validation, or explicit human request.
+
+Keep prompts thin:
+
+```text
+role mission + exception-based read policy + output package + permissions + pause/resume rules
+```
+
+Put shared governance, command chain, and stop rules in a control contract, not in every automation prompt. If control-plane edits become more active than actual lane delivery, pause control expansion and return to the work lane.
+
+Supervisor delegation should avoid "monitor hoarding":
+
+- Frontline Agents should usually have pre-signoff preparation authority: gather refs, draft acceptance maps, propose PRD patches, run validators, prepare rollback paths, request read-only expert challenge, and assemble an admission packet.
+- Supervisors or owner Agents should reserve hard decisions: open a new write surface, sign / reject / defer, resolve authority disputes, modify subordinate triggers, or escalate to a human.
+- After two same-level request packets with no new hard blocker, the supervisor must sign, reject, or name the single missing evidence path. It should not ask for another packet at the same layer.
+
+Projection and audit loops should stay quiet by default:
+
+- Dashboard Agents project accepted truth and owner verdicts. If there is no new truth, verdict, or user-relevant blocker, they should return `DONT_NOTIFY`.
+- Harness auditor Agents should normally be paused or low-frequency. Wake them for review, drift, boundary risk, repeated no-op, wrong signature, or trigger rewrite.
 
 ## Outcome-Oriented Harness
 
@@ -209,6 +250,24 @@ trigger:
     last_run_state:
     resume_token:
   outcome_contract_ref:
+  context_policy:
+    mode: continuous_thread | fresh_context | external_workflow_state
+    inherit_previous_turn: true
+    read_self_history: false
+    read_policy:
+      default: inherit_context
+      read_project_truth_when:
+        - gate_changed
+        - authority_level_changes
+        - entering_implementation_runtime_or_release_admission
+        - context_discontinuity
+    no_change_response: continue_previous | DONT_NOTIFY | suppress
+    heavy_refresh_triggers:
+      - explicit_human_request
+      - boundary_violation
+      - repeated_noop
+      - repeated_shallow_packets
+      - failed_validation
   batch_mode: single_step | work_batch | deep_push
   isolation:
     worktree: optional | required | forbidden
@@ -262,10 +321,11 @@ Design rules:
 1. Prefer deterministic nodes for validation, tests, file checks, branch checks, and cancel conditions.
 2. Use AI nodes where judgment is needed: planning, implementation, review, synthesis, professional challenge, and explanation.
 3. Long loops should read and write progress from files or artifacts. Do not rely on conversational memory as the only state.
-4. A fresh-context loop must carry enough state through files, upstream node output, or artifact refs to continue safely.
-5. Every loop needs a hard bound and a stop reason. A completion tag alone is weaker than a deterministic gate such as tests, validators, or schema checks.
-6. Parallel reviewers do not decide by vote. They produce findings; a synthesis / owner-verdict node decides scope, evidence sufficiency, and next action.
-7. Platform adapters trigger or report workflows. They do not own acceptance, truth, or write authority.
+4. A continuous-thread loop may inherit its own prior turns, but any cross-thread dependency, owner verdict, artifact, or project truth change should still be carried through files, upstream node output, or artifact refs.
+5. A fresh-context loop must carry enough state through files, upstream node output, or artifact refs to continue safely.
+6. Every loop needs a hard bound and a stop reason. A completion tag alone is weaker than a deterministic gate such as tests, validators, or schema checks.
+7. Parallel reviewers do not decide by vote. They produce findings; a synthesis / owner-verdict node decides scope, evidence sufficiency, and next action.
+8. Platform adapters trigger or report workflows. They do not own acceptance, truth, or write authority.
 
 ## Supervisor Plan Control
 
@@ -341,6 +401,14 @@ Light / heavy loop:
 - `deep_push` is reserved for explicit supervisor or human direction when the lane is clear enough for a longer push.
 - Heavy review runs only on state change, blocker, new evidence, failed gate, repeated short reports, or explicit human trigger.
 
+Continuous-thread three-Agent loop:
+
+- Frontline and owner Agents run in their own continuing threads; they inherit prior context by default.
+- The owner Agent sends enough authorization for a full `work_batch`, not only a request for another planning packet.
+- The frontline Agent continues the prior batch when no new directive appears, while staying inside its pre-signoff authority.
+- The Dashboard Agent suppresses output unless accepted truth, owner verdict, blocker, or user-relevant status changed.
+- The harness auditor stays paused or low-frequency until drift, no-op, boundary risk, wrong signature, or explicit review.
+
 Progress heartbeat:
 
 - Include `run_id`, `attempt`, `last_success_ref`, `current_step`, `blocker_ref`, and `resume_token` so retries do not repeat completed side effects.
@@ -364,10 +432,13 @@ Outcome-oriented heartbeat:
 
 - Writing a cron schedule before defining the Agent role.
 - Treating heartbeat as infinite autonomous development.
+- Treating a continuing target thread as a cold-start job on every tick.
 - Treating heartbeat frequency as a cap on single-run work depth.
 - Making the supervisor a passive reviewer instead of the owner of `plan_control`.
+- Making the supervisor hoard every preparation decision, so frontline Agents only produce repeated request packets.
 - Using one broad prompt for every Agent.
 - Duplicating the full governance model in every prompt instead of using a shared control contract plus thin role prompts.
+- Expanding control documents and automation prompts faster than actual lane delivery.
 - Letting no-op heartbeats pollute the main transcript or long-term memory.
 - Letting Dashboard projection become project truth.
 - Letting a subordinate Agent delete its own trigger.

@@ -16,6 +16,24 @@ trigger:
     last_run_state: state/heartbeat-project-owner.json
     resume_token: null
   outcome_contract_ref: artifacts/outcome-contract.yaml
+  context_policy:
+    mode: continuous_thread
+    inherit_previous_turn: true
+    read_self_history: false
+    read_policy:
+      default: inherit_context
+      read_project_truth_when:
+        - gate_changed
+        - authority_level_changes
+        - entering_implementation_runtime_or_release_admission
+        - context_discontinuity
+    no_change_response: continue_previous
+    heavy_refresh_triggers:
+      - explicit_human_request
+      - boundary_violation
+      - repeated_noop
+      - repeated_shallow_packets
+      - failed_validation
   batch_mode: work_batch
   isolation:
     worktree: optional
