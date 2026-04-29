@@ -40,19 +40,57 @@ Chinese trigger terms include: `心跳`, `定时任务`, `自动化`, `定期推
 
 This repository is a skill package. The root `SKILL.md` is the skill entrypoint.
 
-For a local skill root, clone or copy this repository as a folder named `heartbeat`:
+For OpenAI Codex-style user skills, clone this repository as the canonical local source:
 
 ```bash
 git clone https://github.com/TeamZaobi/heartbeat.git ~/.agents/skills/heartbeat
 ```
 
-For Claude Code-style project skills, place it under:
+Then check how it is exposed to supported tools:
 
-```text
-.claude/skills/heartbeat/
+```bash
+python3 ~/.agents/skills/heartbeat/scripts/link_skill.py ~/.agents/skills/heartbeat --status
 ```
 
-For any other Agent host, install it wherever that host expects a skill directory containing `SKILL.md`.
+Link the same source into Claude Code and Antigravity user-level discovery paths:
+
+```bash
+python3 ~/.agents/skills/heartbeat/scripts/link_skill.py ~/.agents/skills/heartbeat
+```
+
+This keeps one editable source and creates symlinks where the host expects them.
+
+## Multi-Tool Support
+
+`heartbeat` is a native skill directory: one folder with one `SKILL.md`. Do not maintain separate editable copies for different hosts. Use links or generated projections.
+
+Supported default user paths:
+
+| Host | User-level path | Mode |
+| --- | --- | --- |
+| OpenAI Codex | `~/.agents/skills/heartbeat` | native source |
+| Claude Code | `~/.claude/skills/heartbeat` | symlink to source |
+| Google Antigravity | `~/.gemini/antigravity/skills/heartbeat` | symlink to source |
+
+Project-level paths:
+
+| Host | Project-level path | Mode |
+| --- | --- | --- |
+| OpenAI Codex | `<project>/.agents/skills/heartbeat` | native project source |
+| Claude Code | `<project>/.claude/skills/heartbeat` | symlink to project source |
+| Google Antigravity | `<project>/.agents/skills/heartbeat` | native project source |
+
+For project-local setup, keep the canonical project copy under `.agents/skills/heartbeat`, then link Claude Code to it:
+
+```bash
+git clone https://github.com/TeamZaobi/heartbeat.git .agents/skills/heartbeat
+python3 .agents/skills/heartbeat/scripts/link_skill.py .agents/skills/heartbeat --project-root .
+python3 .agents/skills/heartbeat/scripts/link_skill.py .agents/skills/heartbeat --project-root . --status
+```
+
+If a host caches skill discovery, open a fresh session after linking.
+
+See [multi-tool adaptation](references/multi-tool-adaptation.md) for the source-of-truth model, refresh rules, and smoke checks.
 
 ## Optional Integrations
 

@@ -36,6 +36,38 @@ shared files-driven control contract + thin role prompts
 
 The shared contract states who commands whom, which context each Agent must inherit, what output package each Agent emits, and when a trigger may pause, resume, change frequency, or escalate. Each heartbeat prompt should mostly point to that contract and state the Agent's local role.
 
+## Multi-Tool Adaptation
+
+`heartbeat` is a native skill directory: one source folder with one `SKILL.md`. Keep that folder as the only editable source and expose it to each host through symlinks or project-local projections.
+
+Default user-level discovery paths:
+
+- OpenAI Codex: `~/.agents/skills/heartbeat`
+- Claude Code: `~/.claude/skills/heartbeat`
+- Google Antigravity: `~/.gemini/antigravity/skills/heartbeat`
+
+Default project-level discovery paths:
+
+- OpenAI Codex: `<project>/.agents/skills/heartbeat`
+- Claude Code: `<project>/.claude/skills/heartbeat`
+- Google Antigravity: `<project>/.agents/skills/heartbeat`
+
+Use `scripts/link_skill.py` for link and status checks when this repository is available:
+
+```bash
+python3 scripts/link_skill.py . --status
+python3 scripts/link_skill.py .
+python3 scripts/link_skill.py . --project-root /path/to/project --status
+```
+
+Rules:
+
+- Do not copy `SKILL.md` into multiple editable host directories.
+- If this folder already lives in a host's native path, treat that as the source and do not create a self-link.
+- If a project wants local behavior, clone or vendor the skill under `<project>/.agents/skills/heartbeat`, then link other project host paths to it.
+- If a host caches skills, verify in a fresh session before claiming live discovery.
+- If a workflow engine, command pack, MCP server, or plugin is involved, adapt to that external surface instead of flattening it into this skill.
+
 ## Core Model
 
 Think in this order:
