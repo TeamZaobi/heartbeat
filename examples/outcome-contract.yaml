@@ -1,5 +1,12 @@
 outcome_contract:
   beneficiary: downstream_system
+  entropy_reduction:
+    pain_source: survival_pressure
+    reduced_confusion: "clear verdict and artifact references replace repeated status probing"
+    reduced_waiting: "the next owner action is explicit after each run"
+    reduced_repeated_work: "completed checks and validation logs are not rerun without a trigger"
+    reduced_drift_or_recovery_risk: "state and artifacts preserve the recovery path"
+    no_new_noise_rule: "return DONT_NOTIFY or back off when no beneficiary-visible state changed"
   success_definition:
     visible_delivery: "the requested workflow runs and reports a clear verdict"
     foundation_contribution: "state, artifacts, and validation logs make future runs recoverable"
@@ -21,6 +28,7 @@ outcome_contract:
     - owner_verdict
     - downstream_acceptance
   reflection_questions:
+    - "Which beneficiary entropy did this run reduce?"
     - "Did this run create durable value for the beneficiary?"
     - "Did visible progress hide missing foundation work?"
     - "Which delayed signal could falsify this success claim?"

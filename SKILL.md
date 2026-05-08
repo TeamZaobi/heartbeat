@@ -8,7 +8,10 @@ description: >
   authority, evidence standard, context, stop/resume policy, and only then
   choose schedule/event/state-change mechanics. Also use for continuous-thread
   light loops, supervisor delegation, prompt slimming, trigger rewrite, and
-  anti-bureaucratic heartbeat control. Trigger on Chinese terms such as
+  anti-bureaucratic heartbeat control. Apply Occam and entropy reduction:
+  do not create or expand a loop unless it reduces beneficiary confusion,
+  waiting, forgotten work, drift, verification burden, or recovery risk.
+  Trigger on Chinese terms such as
   心跳、定时任务、自动化、定期推进、触发器、trigger、唤醒、监工、循环、暂停、恢复、改频、重建.
 ---
 
@@ -20,6 +23,49 @@ Use this skill when the user wants to create or change a heartbeat, recurring au
 
 > Design the Agent first; then decide when and how it wakes.
 
+## Governing Principles
+
+### Occam Preflight
+
+Before designing or modifying a heartbeat, first ask whether the heartbeat should exist at all.
+Prefer the least active mechanism that still reduces entropy for the beneficiary:
+
+1. no recurring trigger; finish the work now
+2. simple host reminder; no Agent loop
+3. event or state-change trigger; no polling cadence
+4. continuous-thread light loop; no cold-start rereads
+5. one thin Agent prompt plus existing control contract
+6. workflow-backed trigger only when phases, gates, artifacts, recovery, or reuse truly require it
+
+Do not add a heartbeat, supervisor, dashboard, auditor, workflow, control file, or prompt rewrite just because progress is uncertain.
+Add one only when it removes a specific uncertainty, wait state, forgotten handoff, verification gap, drift risk, or recovery risk.
+
+### Beneficiary Entropy Reduction
+
+Every heartbeat must name the beneficiary and the entropy it reduces.
+The useful question is not "how often should this wake up?" but:
+
+- Who is less confused, less blocked, less exposed to drift, or less burdened after this trigger runs?
+- What context, decision, evidence, or recovery path becomes clearer?
+- What noise, repeated check, unnecessary reread, or avoidable status output disappears?
+
+If the loop mainly creates transcript volume, status theater, repeated request packets, duplicated governance text, or extra control objects,
+pause or downgrade it until the entropy reduction is explicit.
+
+### Causal Chain For Trigger Demand
+
+Use this causal chain before choosing the Agent role or cadence:
+
+```text
+comparison advantage or survival pressure -> pain -> trigger need -> harness architecture -> wakeup mechanics
+```
+
+Here, comparison advantage means a beneficiary needs to show, preserve, or improve an advantage among peers.
+Survival pressure means a beneficiary needs to stay safe, reliable, recoverable, compliant, or operational under environmental pressure.
+The pain is the concrete friction created when that drive is blocked.
+The trigger need is the smallest recurring or event-driven intervention that can reduce that pain.
+Only after that should the harness architecture and wakeup mechanics be chosen.
+
 ## Coordination
 
 - `MyWay` or another companion router can identify whether the user really means trigger / Agent design rather than a simple timer.
@@ -30,13 +76,60 @@ Use this skill when the user wants to create or change a heartbeat, recurring au
 
 If the user explicitly asks to create, update, delete, list, or inspect a host automation, use the host automation tool when available. Do not replace a real automation operation with prose.
 
-For multi-Agent heartbeats, avoid putting the full governance model into every automation prompt. Prefer:
+For multi-Agent heartbeats, do not add a new control layer by default. First try direct peer handoff:
+
+```text
+target + why_now + work_batch + write_scope + evidence_refs + validation + stop_or_recovery
+```
+
+If the existing Agents can hand off with that packet and the target Agent can safely wake, work, verify, and back off, do not create a supervisor,
+shared control file, workflow, dashboard, or new prompt regime.
+
+Handoff payloads are replace-only, not append-only. A heartbeat prompt may contain at most one `current_handoff`. When that handoff is completed,
+blocked, or routed onward, the Agent must remove it or restore the base prompt. Durable evidence, logs, receipts, and decisions belong in artifacts,
+project files, or the target thread output, not in the automation prompt.
+
+Recipient-owned prompt rule: the target Agent owns its role mission, default behavior, authority, boundaries, and result-return rules. A different
+Agent may only add, replace, or clear the target's single `current_handoff`; it must not rewrite the target's base prompt into a handoff-only prompt.
+Use the host automation API when available, preserving the existing base prompt and changing only `current_handoff`, status, and cadence. Directly
+editing `automation.toml` is allowed only to repair a broken automation file; after repair, validate that the file parses, the target thread still
+matches, and the target's role baseline markers are still present.
+
+Result handoff comes before cleanup. If a run produces failures, fixes, evidence gaps, owner decisions, downstream tasks, or facts that another
+Agent must consume, the Agent must first wake the right target with a minimal `current_handoff`, verify that the handoff was written, and only then
+clean its own prompt / cadence. If there is no actionable downstream result, it may clean itself and stay quiet. Cleanup without routing actionable
+results is a broken handoff, even when the run itself completed.
+
+Return scheduling comes before self-backoff. A frontline, validator, E2E, or worker Agent that completes, blocks, or exhausts a `work_batch` must
+send the owner / dispatcher a compact scheduling result before lowering its own cadence, unless the owner already has an equivalent handoff or the
+Agent explicitly emits `no_owner_scheduling_needed` with evidence. This result can be combined with the normal handoff, but it must tell the owner:
+completed state, evidence refs, remaining blocker, recommended next batch, and whether the Agent should stay active, back off, or wait. Self-backoff
+without this owner scheduling signal is a broken handoff even when no direct fix task exists.
+
+Self-prove comes before escalation. A frontline Agent must exhaust safe local proof before handing a blocker to Owner: search accepted refs and
+existing public-safe artifacts, run non-live preflight / validator commands that are inside its write and privacy boundary, attach the command or
+absence proof, and keep working if the next action is still repo-local. Escalate only when the next step crosses safety, privacy, live / SSH / secret,
+release / showcase, real-data, write-scope, authority, or evidence-conflict boundaries.
+
+Post-audit is the default for safe work. Do not use audit as a pre-approval gate when issues can be caught by self-review, Subagents, validators, E2E,
+receipts, rollback paths, or owner review after the work batch. Frontline Agents should push implementation, tests, and evidence forward in parallel,
+then route the audit findings and fixes; pre-gate only for safety, privacy, live / release, real-data, irreversible writes, write-scope conflict, or
+material evidence contradiction.
+
+New issue intake is part of the scheduling result. If development, audit, E2E, validation, or runtime recovery exposes a new bug, missing prerequisite,
+broken harness behavior, unclear requirement, or follow-up task, the executing Agent must propose it as an intake candidate instead of burying it in
+the final answer. The candidate should be compact: symptom, evidence, affected lane, proposed owner, whether it can run in parallel, and the smallest
+validation / stop condition. The owner / dispatcher must either merge it into the next executable backlog batch, route it to the right Agent, reject it
+with a reason, or mark the single missing evidence path. A newly discovered issue that is not triaged is a broken handoff.
+
+Only when repeated handoffs fail for a structural reason should you use an existing shared control contract. Avoid putting the full governance model into every automation prompt. Prefer:
 
 ```text
 shared files-driven control contract + thin role prompts
 ```
 
-The shared contract states who commands whom, which context each Agent must inherit, what output package each Agent emits, and when a trigger may pause, resume, change frequency, or escalate. Each heartbeat prompt should mostly point to that contract and state the Agent's local role.
+The shared contract states the minimum authority and stop rules needed to prevent recurring failure. It should not become a new project truth source,
+status board, or approval layer. Each heartbeat prompt should mostly state the Agent's local role and the direct handoff rule.
 
 If a heartbeat targets the same continuing conversation each time, treat that thread as live working context. Do not force the Agent to reread its own latest final answer, replay the rollout, or reload the full project truth on every tick just to prove continuity. Use external files and thread reads as exception handling: new user instruction, new owner verdict, gate change, context break, boundary risk, repeated no-op, or admission / release decision.
 
@@ -77,13 +170,13 @@ Rules:
 Think in this order:
 
 ```text
-trigger -> target Agent -> outcome contract -> context mode -> authority -> evidence -> output -> next trigger policy
+beneficiary pain -> entropy reduction target -> trigger need -> target Agent -> outcome contract -> context mode -> authority -> evidence -> output -> next trigger policy
 ```
 
 For repeatable Agent work, the practical object is often not a prompt but a harness:
 
 ```text
-trigger -> workflow run -> node harness -> outcome gate -> artifact chain -> authority gate -> resume / rewrite / stop
+trigger need -> workflow run -> node harness -> outcome gate -> artifact chain -> authority gate -> resume / rewrite / stop
 ```
 
 Agent management is not HR for models. Foundation-model ability is often similar across Agents; the meaningful differences come from harness design: context, tools, skills, hooks, model choice, sandbox, artifact contract, trigger source, evidence gate, adapter, and recovery policy.
@@ -92,10 +185,12 @@ Default philosophy:
 
 ```text
 capability plane: mostly flat
-control plane: explicitly layered
+coordination plane: minimally explicit
 ```
 
-Do not create hierarchy because one Agent is "smarter". Create hierarchy because one harness owns planning, one owns execution, one owns projection, one owns professional challenge, and one owns acceptance / recovery.
+Do not create hierarchy because one Agent is "smarter", and do not create hierarchy just because coordination feels uncertain. Prefer peer handoff plus
+local responsibility. Add hierarchy only when there is a real authority dispute, acceptance decision, write-scope conflict, release risk, or repeated
+handoff failure that cannot be solved by a smaller packet.
 
 ## Continuous-Thread Light Loops
 
@@ -128,6 +223,30 @@ Supervisor delegation should avoid "monitor hoarding":
 - Frontline Agents should usually have pre-signoff preparation authority: gather refs, draft acceptance maps, propose PRD patches, run validators, prepare rollback paths, request read-only expert challenge, and assemble an admission packet.
 - Supervisors or owner Agents should reserve hard decisions: open a new write surface, sign / reject / defer, resolve authority disputes, modify subordinate triggers, or escalate to a human.
 - After two same-level request packets with no new hard blocker, the supervisor must sign, reject, or name the single missing evidence path. It should not ask for another packet at the same layer.
+- Owner Agents are delivery drivers, not inboxes. On every result or blocker they must scan the plan for other runnable lanes, dispatch a sufficiently large safe batch, and verify the target trigger / thread exists and was updated. They may wait only after naming the blocking lane, proving no independent lane can move, and giving the resume condition.
+
+Prompt governance learned from live runs:
+
+- A heartbeat prompt is not a backlog, status log, retrospective, or project memory. It should contain the role, authority, stop rules, read policy, and at most one `current_handoff`.
+- The base role mission is not disposable. Prompt rewrites that only change a handoff, status, cadence, or evidence refs must preserve the first role / mission paragraph unless the user explicitly changes that role. Losing phrases that define success posture, such as owner responsibility for delivery quality and speed or a worker's mandate to push implementation with Subagents, is a prompt regression.
+- Cross-Agent handoff is not cross-Agent prompt ownership. If an Agent cannot preserve the target's role baseline while writing a handoff, it must send the owner a compact handoff packet instead of editing the target automation.
+- If the target is a continuing thread, prefer a short delta such as "continue the prior accepted batch with this new evidence" over replaying project truth, prior finals, or long governance text.
+- Update prompts only when authority, route, cadence, evidence standard, stop condition, or current handoff changes. Do not edit prompts just to restate good practice.
+- When a work lane is clear, the owner should authorize a full `work_batch` or `deep_push`: implementation, self-review, targeted Subagents / sidecars, validator or E2E, fixes, evidence, and result handoff in one run.
+- Do not split work into approval packets when audit, testing, and reflection can happen inside the execution batch. Reserve gates for irreversible writes, privacy / security / live / release risk, real-data risk, write-scope conflict, authority conflict, or evidence contradiction.
+- If a worker escalates a small blocker without a self-prove packet, the right owner action is usually to return it as an executable self-prove handoff, not to ask for human approval.
+- Treat new bugs, missing prerequisites, and harness failures found during execution as backlog intake, not as optional commentary. The executing Agent proposes; the owner absorbs, routes, rejects, or names the one evidence gap.
+- Treat "one lane blocked" as a scheduling event, not as a project stop. The owner must either open another safe lane, wake a recovery owner, or document why all lanes are genuinely blocked.
+- If prompt cleanup would erase the only active task before another Agent has received it, cleanup is wrong. Route the result first, then clean.
+
+Subagents and sidecars should increase depth without adding bureaucracy:
+
+- Use Subagents only when the host policy and trigger contract allow it, and when the work can be parallelized or professionally challenged without blocking the next local step.
+- Prefer concrete sidecar jobs: disjoint implementation slice, read-only architecture / product / risk challenge, validator / E2E run, evidence audit, or targeted root-cause review.
+- A Subagent request must name role, scope, allowed writes, expected artifact or finding, validation, and stop condition. Do not pass the whole project history when a delta plus evidence refs is enough.
+- Frontline Agents may call Subagents for self-audit, tests, and bounded fixes inside their authorized work batch. Owner Agents may call Subagents for multi-expert challenge before signing, rejecting, or narrowing the single evidence path.
+- Subagents do not decide by vote. Their findings are consumed by the responsible Agent, which must either fix, sign, reject, or hand off a concrete next task.
+- If Subagents produce actionable results, those results follow the same rule: result handoff comes before cleanup.
 
 Projection and audit loops should stay quiet by default:
 
@@ -149,6 +268,13 @@ Define an `outcome_contract` for any trigger that can change project state or gu
 ```yaml
 outcome_contract:
   beneficiary: user | downstream_system | project_owner | operator | future_agent
+  entropy_reduction:
+    pain_source: comparison_advantage | survival_pressure | both
+    reduced_confusion:
+    reduced_waiting:
+    reduced_repeated_work:
+    reduced_drift_or_recovery_risk:
+    no_new_noise_rule:
   success_definition:
     visible_delivery:
     foundation_contribution:
@@ -169,6 +295,7 @@ outcome_contract:
     - validator_or_test
     - third_party_metric
   reflection_questions:
+    - Which beneficiary entropy did this run reduce?
     - Did this run create durable value for the beneficiary?
     - Did it trade long-term reliability for short-term visible progress?
     - What invisible foundation work should be protected or continued?
@@ -184,6 +311,7 @@ Treat reward shaping as harness scoring unless you are actually training a model
 Outcome guardrails:
 
 - Block plans that look complete but have no execution path, evidence path, rollback path, or beneficiary validation.
+- Block triggers whose beneficiary pain, entropy reduction target, or causal chain is unclear.
 - Penalize specification gaming: inflated status, shallow dashboard progress, fabricated completion, hidden debt, or passing one metric while harming the system.
 - Allow protected iteration for foundation work when the long-term benefit is explicit and the trigger has a recheck condition.
 - Tighten validation during execution and release phases; allow more exploration only when the trigger is explicitly in discovery mode.
@@ -277,7 +405,7 @@ trigger:
     write_draft: false
     write_truth: false
     pause_self: true
-    modify_others: false
+    modify_others: handoff_only | false
     modify_subordinate_schedule: false
     delete_self: false
   next_policy:
@@ -292,7 +420,12 @@ Default deletion rule:
 
 - Worker / Dashboard / monitor Agents must not delete their own heartbeat.
 - They may pause themselves when stop conditions are met.
-- A supervisor or project-owner Agent may modify subordinate prompt, schedule, and status when it emits a `harness_action` with reason, scope, expected effect, and restore / recheck condition.
+- A frontline Agent may modify another Agent's prompt, schedule, or status only for a bounded handoff, and only with `target`, `why_now`,
+  `work_batch`, `write_scope`, `evidence_refs`, `validation`, and `stop_or_recovery`. It must not change the target thread, cwd, model,
+  execution environment, write authority, role baseline, default behavior, boundary rules, result-return rules, or delete the target trigger.
+  Prefer the platform automation update tool; raw file edits are repair-only and must be followed by parser validation and baseline-marker checks.
+- A supervisor or project-owner Agent may modify prompt, schedule, and status when it emits a `harness_action` with reason, scope,
+  expected effect, and restore / recheck condition.
 - Deletion is reserved for an explicit human/admin maintenance action unless the current platform has a stricter contract.
 
 Frequency is a scheduling decision, not a project-truth decision. A Dashboard or projection trigger may be reduced to hourly when the visible state is unlikely to change; a development or owner-verdict trigger may stay high-frequency during fast-changing or blocked phases. Frequency does not define work depth: a 3-minute wakeup can still request a substantial `work_batch`.
@@ -329,7 +462,10 @@ Design rules:
 
 ## Supervisor Plan Control
 
-When an Agent is responsible for other Agents, it must be designed as a planner and dispatcher, not just a reviewer. Require a `plan_control` package before it issues directives:
+Only use this section when an Agent truly owns planning / acceptance authority for other Agents. Do not introduce `plan_control` just because a
+handoff is needed. Most peer-to-peer Agent collaboration should use the direct handoff packet instead.
+
+When an Agent is explicitly responsible for other Agents, it must be designed as a planner and dispatcher, not just a reviewer. Require a `plan_control` package before it issues directives:
 
 ```yaml
 plan_control:
@@ -353,17 +489,19 @@ Stop rule: if a supervisor only comments on subordinate work but does not mainta
 
 ## Design Workflow
 
-1. Decide whether this is a simple reminder or an Agent trigger.
-2. If it is an Agent trigger, write the Agent role card first.
-3. Choose trigger source: schedule, event, state change, human, or recovery.
-4. Define context payload and memory boundary. Background trigger content must not silently become long-term memory or project truth.
-5. Define authority and forbidden actions, especially write rights, pause/resume rights, and delete rights.
-6. Define output contract. No-op runs should be suppressible.
-7. Define the outcome contract: right outcome, visible delivery, foundation contribution, beneficiary oracle, anti-gaming guardrails, and feedback loop.
-8. For multi-Agent systems, define the shared control contract and keep prompts thin.
-9. If the trigger has phases, retries, or reusable gates, lower it into a workflow-backed trigger contract.
-10. Define evidence standard and escalation path.
-11. Define verification: persisted config, target thread or workflow run, latest run, artifact chain, state transition, and rollback/resume path.
+1. Run Occam preflight: decide whether no trigger, a simple reminder, an event trigger, a light loop, or a workflow-backed trigger is the least active sufficient mechanism.
+2. Name the beneficiary entropy reduction: what confusion, waiting, repeated work, drift, verification burden, or recovery risk should go down?
+3. Trace the causal chain: comparison advantage or survival pressure -> pain -> trigger need -> harness architecture -> wakeup mechanics.
+4. If it is an Agent trigger, write the Agent role card.
+5. Choose trigger source: schedule, event, state change, human, or recovery.
+6. Define context payload and memory boundary. Background trigger content must not silently become long-term memory or project truth.
+7. Define authority and forbidden actions, especially write rights, pause/resume rights, and delete rights.
+8. Define output contract. No-op runs should be suppressible.
+9. Define the outcome contract: entropy reduction target, right outcome, visible delivery, foundation contribution, beneficiary oracle, anti-gaming guardrails, and feedback loop.
+10. For multi-Agent systems, first define direct handoff. Add a shared control contract only after repeated handoff failure or an explicit authority conflict.
+11. If the trigger has phases, retries, or reusable gates, lower it into a workflow-backed trigger contract.
+12. Define evidence standard and escalation path.
+13. Define verification: persisted config, target thread or workflow run, latest run, artifact chain, state transition, and rollback/resume path.
 
 ## Output Shapes
 
@@ -373,7 +511,7 @@ For design-only requests, return:
 2. `trigger_contract`
 3. `outcome_contract`
 4. `authority_and_stop_rules`
-5. `shared_control_contract` when multiple Agents collaborate
+5. `direct_handoff_rule`; add `shared_control_contract` only when direct handoff is insufficient
 6. `workflow_backed_trigger_contract` when a DAG / loop / approval / artifact chain is needed
 7. `activation_or_verification_plan`
 
@@ -409,6 +547,13 @@ Continuous-thread three-Agent loop:
 - The Dashboard Agent suppresses output unless accepted truth, owner verdict, blocker, or user-relevant status changed.
 - The harness auditor stays paused or low-frequency until drift, no-op, boundary risk, wrong signature, or explicit review.
 
+Low-entropy deep-push loop:
+
+- The owner gives one clear batch: objective, write scope, evidence refs, validation, forbidden zones, and result handoff target.
+- The frontline Agent pushes the batch as far as safely possible in one run, using Subagents / sidecars for parallel audit, tests, and root-cause challenge when useful.
+- The run must end in one of four states: landed with evidence, blocked by one named evidence path, handed off to the correct next Agent, or paused with no actionable downstream work.
+- The prompt should shrink after the batch: remove stale `current_handoff`, keep only base role rules, and leave durable facts in artifacts or project files.
+
 Progress heartbeat:
 
 - Include `run_id`, `attempt`, `last_success_ref`, `current_step`, `blocker_ref`, and `resume_token` so retries do not repeat completed side effects.
@@ -430,15 +575,22 @@ Outcome-oriented heartbeat:
 
 ## Anti-Patterns
 
+- Creating a heartbeat when finishing now, setting a simple reminder, or using an existing event would reduce more entropy.
+- Starting from cadence, platform, or automation UI before naming beneficiary pain.
 - Writing a cron schedule before defining the Agent role.
 - Treating heartbeat as infinite autonomous development.
 - Treating a continuing target thread as a cold-start job on every tick.
 - Treating heartbeat frequency as a cap on single-run work depth.
 - Making the supervisor a passive reviewer instead of the owner of `plan_control`.
 - Making the supervisor hoard every preparation decision, so frontline Agents only produce repeated request packets.
+- Forcing frontline Agents to wait for supervisor approval when the approved work batch can absorb audit, tests, fixes, and reflection locally.
+- Calling Subagents as a discussion ritual instead of assigning parallel implementation, targeted audit, validator, E2E, or root-cause work with a clear artifact.
+- Adding `plan_control`, a shared contract, or a supervisor when direct peer handoff would solve the coordination problem.
 - Using one broad prompt for every Agent.
 - Duplicating the full governance model in every prompt instead of using a shared control contract plus thin role prompts.
 - Expanding control documents and automation prompts faster than actual lane delivery.
+- Letting `current_handoff` accumulate stale history, or clearing it before actionable results reach the next Agent.
+- Adding a supervisor, auditor, dashboard, or workflow because of anxiety, without proving which entropy it reduces.
 - Letting no-op heartbeats pollute the main transcript or long-term memory.
 - Letting Dashboard projection become project truth.
 - Letting a subordinate Agent delete its own trigger.

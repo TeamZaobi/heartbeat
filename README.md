@@ -5,13 +5,16 @@
 The central idea is simple:
 
 ```text
-Design the Agent first; then decide when and how it wakes.
+Prove the beneficiary entropy reduction first; design the Agent second; decide when and how it wakes last.
 ```
 
-A heartbeat is a trigger. A timer is only one trigger source. Good heartbeat design defines the Agent role, professional positioning, authority, evidence standard, context payload, stop/resume policy, artifact chain, and recovery path before choosing cron, schedule, webhook, state change, or human wakeup mechanics.
+A heartbeat is a trigger. A timer is only one trigger source. Good heartbeat design first checks whether any recurring trigger is needed, then defines the beneficiary pain, entropy reduction target, Agent role, professional positioning, authority, evidence standard, context payload, stop/resume policy, artifact chain, and recovery path before choosing cron, schedule, webhook, state change, or human wakeup mechanics.
 
 ## What This Skill Adds
 
+- Occam preflight before creating or expanding loops
+- Beneficiary entropy reduction as the reason a heartbeat exists
+- Causal-chain design: comparison advantage or survival pressure -> pain -> trigger need -> harness architecture -> wakeup mechanics
 - Agent role cards before cron expressions
 - Trigger contracts with authority, evidence, and next-run policy
 - Workflow-backed trigger design for DAGs, loops, approvals, artifacts, isolation, adapters, and recovery
@@ -110,7 +113,7 @@ If these tools are not installed, apply the same responsibilities manually in yo
 ## Core Model
 
 ```text
-trigger -> target Agent -> context mode -> authority -> evidence -> output -> next trigger policy
+beneficiary pain -> entropy reduction target -> trigger need -> target Agent -> context mode -> authority -> evidence -> output -> next trigger policy
 ```
 
 For repeatable Agent work, lower it into a harness:
